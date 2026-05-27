@@ -220,14 +220,34 @@ serve(async (req) => {
       },
     };
 
-    const r = await fetch(geminiUrl(GEMINI_KEY), {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (!r.ok) {
-      const t = await r.text();
-      return json({ error: `Gemini error: ${r.status} ${t.slice(0, 400)}` }, 502);
+    // 503/429 등 일시적 오류는 짧은 백오프로 자동 재시도
+    const RETRYABLE = new Set([429, 500, 502, 503, 504]);
+    const MAX_ATTEMPTS = 3;
+    let r: Response | null = null;
+    let lastStatus = 0;
+    let lastBody = '';
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      r = await fetch(geminiUrl(GEMINI_KEY), {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (r.ok) break;
+      lastStatus = r.status;
+      lastBody = await r.text();
+      if (!RETRYABLE.has(r.status) || attempt === MAX_ATTEMPTS) {
+        r = null;
+        break;
+      }
+      // 1s, 2s 백오프
+      await new Promise((res) => setTimeout(res, 1000 * Math.pow(2, attempt - 1)));
+    }
+    if (!r) {
+      const friendly =
+        lastStatus === 503 || lastStatus === 429
+          ? 'AI 서버가 지금 많이 혼잡해요. 1~2분 후 "다시 시도"를 눌러주세요.'
+          : `Gemini error: ${lastStatus} ${lastBody.slice(0, 200)}`;
+      return json({ error: friendly, retryable: lastStatus === 503 || lastStatus === 429 }, 502);
     }
     const geminiRes = await r.json();
     const text = geminiRes?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';

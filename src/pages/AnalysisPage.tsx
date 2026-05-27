@@ -77,9 +77,14 @@ export default function AnalysisPage() {
         )}
 
         {status.kind === 'error' && (
-          <div className="card card-pad" style={{ color: 'var(--terracotta)' }}>
-            <p style={{ margin: 0 }}>문제가 생겼어요</p>
-            <p className="mt-2 muted" style={{ fontSize: 13, margin: 0 }}>{status.message}</p>
+          <div className="card card-pad">
+            <p style={{ margin: 0, color: 'var(--terracotta)' }}>문제가 생겼어요</p>
+            <p className="mt-2 muted" style={{ fontSize: 13, margin: 0, lineHeight: 1.7 }}>
+              {status.message}
+            </p>
+            <button className="btn btn-primary btn-block mt-4" onClick={runAnalysis}>
+              다시 시도하기
+            </button>
           </div>
         )}
 
