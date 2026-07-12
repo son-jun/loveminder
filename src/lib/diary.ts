@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { TOTAL_DAYS } from '../types';
 import type { DiaryEntry, EntryType, ProcessData, WritingAnalysis } from '../types';
 
 type Row = {
@@ -182,11 +183,11 @@ interface AnalyzeApiResponse {
 }
 
 export async function requestAnalysis(userId: string): Promise<WritingAnalysis> {
-  // 1) 최근 14편을 클라이언트에서 모아 서버로 전달 (서버는 DB 접근 없음)
+  // 1) 최근 N편을 클라이언트에서 모아 서버로 전달 (서버는 DB 접근 없음)
   const all = await fetchEntries(userId); // date desc
-  const recent = [...all].reverse().slice(-14); // date asc, 최근 14
-  if (recent.length < 14) {
-    throw new Error('14일치 글이 아직 모이지 않았어요.');
+  const recent = [...all].reverse().slice(-TOTAL_DAYS); // date asc, 최근 N편
+  if (recent.length < TOTAL_DAYS) {
+    throw new Error(`${TOTAL_DAYS}일치 글이 아직 모이지 않았어요.`);
   }
 
   // 2) 로컬 KoBERT 서버 호출

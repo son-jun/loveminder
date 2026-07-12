@@ -82,4 +82,7 @@ export interface AppUser {
   createdAt: string;   // 가입일 = 일기 카운트 시작 기준
 }
 
-export const TOTAL_DAYS = 14;
+// 분석이 열리기까지 필요한 글 편수. 기본 14일.
+// 짧은 시연/세션에서는 빌드 시 VITE_TOTAL_DAYS 로 낮출 수 있다 (예: VITE_TOTAL_DAYS=3).
+// 주의: 서버(app.py)의 MIN_ENTRIES 와 반드시 같은 값이어야 분석이 성공한다.
+export const TOTAL_DAYS = Number(import.meta.env.VITE_TOTAL_DAYS) || 14;

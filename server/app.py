@@ -74,6 +74,9 @@ GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 # 공개 배포 시 아무나 /analyze 를 못 부르게 하는 간단한 공유 토큰 (선택)
 ANALYZE_TOKEN = os.environ.get("ANALYZE_TOKEN")
 PORT = int(os.environ.get("PORT", "8000"))
+# 분석에 필요한 최소 글 편수. 기본 14. 짧은 세션/시연에서는 MIN_ENTRIES=3 처럼 낮춘다.
+# 주의: 프론트의 VITE_TOTAL_DAYS 와 반드시 같은 값이어야 한다.
+MIN_ENTRIES = int(os.environ.get("MIN_ENTRIES", "14"))
 
 # CORS 허용 오리진: ALLOW_ORIGINS(콤마구분) 있으면 그것만, 없으면 전체 허용
 _origins_env = os.environ.get("ALLOW_ORIGINS", "").strip()
@@ -212,7 +215,7 @@ def build_kobert_items(k: dict[str, Any], proc: dict[str, Any]) -> list[dict]:
         {
             "key": "writing_type",
             "label": k["typeName"],
-            "evidence": f"14편 중 대표 유형은 ‘{k['typeName']}’입니다. (분포: {k['distribution']})",
+            "evidence": f"{n}편 중 대표 유형은 ‘{k['typeName']}’입니다. (분포: {k['distribution']})",
             "meaning": k["typeDesc"],
         },
         {
@@ -394,7 +397,12 @@ def fallback_summary(k: dict, proc: dict) -> dict:
 # ── 엔드포인트 ─────────────────────────────────────────────────────────────
 @app.get("/health")
 def health():
-    return {"ok": True, "gemini": bool(GEMINI_KEY), "model": GEMINI_MODEL}
+    return {
+        "ok": True,
+        "gemini": bool(GEMINI_KEY),
+        "model": GEMINI_MODEL,
+        "minEntries": MIN_ENTRIES,
+    }
 
 
 @app.post("/predict")
@@ -408,9 +416,9 @@ def predict(req: PredictReq, x_analyze_token: str | None = Header(default=None))
 def analyze(req: AnalyzeReq, x_analyze_token: str | None = Header(default=None)):
     _check_token(x_analyze_token)
     entries = [e for e in req.entries if (e.content or "").strip()]
-    if len(entries) < 14:
-        return {"error": "14일치 글이 아직 모이지 않았어요.", "count": len(entries)}
-    recent = entries[-14:]
+    if len(entries) < MIN_ENTRIES:
+        return {"error": f"{MIN_ENTRIES}일치 글이 아직 모이지 않았어요.", "count": len(entries)}
+    recent = entries[-MIN_ENTRIES:]
 
     # 1) KoBERT 개별 판독 + 집계
     per_entry = [predict_one(e.content) for e in recent]
