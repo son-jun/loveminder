@@ -21,7 +21,7 @@ export default function RecordsPage() {
     <div className="page">
       <div className="page-header">
         <h1>지금까지의 기록</h1>
-        <p className="sub">14일 중 {Math.min(count, TOTAL_DAYS)}일 기록했어요</p>
+        <p className="sub">{TOTAL_DAYS}일 중 {Math.min(count, TOTAL_DAYS)}일 기록했어요</p>
 
         <div
           className="mt-4"

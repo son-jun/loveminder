@@ -3,7 +3,7 @@ import Icon from '../components/Icon';
 import PromptView from '../components/PromptView';
 import { useAuth } from '../lib/auth';
 import { fetchAllAnalyses } from '../lib/diary';
-import type { AnalysisKey, WritingAnalysis } from '../types';
+import { TOTAL_DAYS, type AnalysisKey, type WritingAnalysis } from '../types';
 
 const ITEM_NAMES: Record<AnalysisKey, string> = {
   // KoBERT 3축 8유형
@@ -69,7 +69,7 @@ export default function PromptsPage() {
         <p className="sub">
           {list && list.length > 0
             ? `지금까지 ${list.length}편의 프롬프트가 모였어요`
-            : '14일 사이클마다 한 편씩 쌓여요'}
+            : `${TOTAL_DAYS}일 사이클마다 한 편씩 쌓여요`}
         </p>
       </div>
 
@@ -179,7 +179,7 @@ function EmptyState() {
         아직 만든 프롬프트가 없어요
       </h2>
       <p className="muted mt-2" style={{ fontSize: 13 }}>
-        오늘 탭에서 14일치 일기를 모으고
+        오늘 탭에서 {TOTAL_DAYS}일치 일기를 모으고
         <br />분석 탭에서 분석을 시작해보세요.
       </p>
     </div>

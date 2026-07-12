@@ -105,7 +105,7 @@ export default function TodayPage() {
     <div className="page leafy">
       <div className="page-header">
         <div className="row between">
-          <span className="chip">14일 중 {dayNumber}일째</span>
+          <span className="chip">{TOTAL_DAYS}일 중 {dayNumber}일째</span>
           <button
             type="button"
             onClick={signOut}

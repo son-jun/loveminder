@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Icon from '../components/Icon';
 import { useAuth } from '../lib/auth';
+import { TOTAL_DAYS } from '../types';
 
 type View =
   | { kind: 'form' }
@@ -48,7 +49,7 @@ export default function AuthPage() {
     <div className="page leafy">
       <div className="page-header">
         <h1 className="serif">이음</h1>
-        <p className="sub">14일간의 글이 나만의 AI 프롬프트가 됩니다.</p>
+        <p className="sub">{TOTAL_DAYS}일간의 글이 나만의 AI 프롬프트가 됩니다.</p>
       </div>
       <div className="page-body" style={{ paddingTop: 24 }}>
         <div className="card card-pad">
@@ -122,7 +123,7 @@ export default function AuthPage() {
         </div>
 
         <p className="muted mt-5" style={{ fontSize: 12, textAlign: 'center' }}>
-          이음은 글쓰기 결과·과정을 바탕으로 <br /> 이번 14일의 경향을 보여줍니다.
+          이음은 글쓰기 결과·과정을 바탕으로 <br /> 이번 {TOTAL_DAYS}일의 경향을 보여줍니다.
         </p>
       </div>
     </div>

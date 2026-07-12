@@ -7,7 +7,7 @@ import { advanceCycle, computeCycleState, getCycleStart } from '../lib/cycle';
 import { TOTAL_DAYS, type WritingAnalysis } from '../types';
 
 const ANALYZING_STEPS = [
-  '14일치 일기를 모으는 중…',
+  `${TOTAL_DAYS}일치 일기를 모으는 중…`,
   '글쓰기 과정 데이터를 정리하는 중…',
   'KoBERT로 글 유형을 판독하는 중…',
   '여섯 가지 관찰을 정리하는 중…',
@@ -66,7 +66,7 @@ export default function AnalysisPage() {
     <div className="page">
       <div className="page-header">
         <h1>나의 글쓰기 분석</h1>
-        <p className="sub">14일치가 모이면 이 화면에서 분석을 시작할 수 있어요.</p>
+        <p className="sub">{TOTAL_DAYS}일치가 모이면 이 화면에서 분석을 시작할 수 있어요.</p>
       </div>
 
       <div className="page-body">
@@ -107,11 +107,11 @@ export default function AnalysisPage() {
               <Icon name="sparkle" size={26} />
             </div>
             <h2 className="serif mt-3" style={{ margin: 0, fontSize: 'var(--fs-20)' }}>
-              14일치 글이 모였어요
+              {TOTAL_DAYS}일치 글이 모였어요
             </h2>
             <p className="muted mt-2" style={{ fontSize: 14 }}>
               지금 분석을 시작하면 자기성찰 리포트와 나만의 AI 프롬프트가 만들어져요.
-              <br />결과는 <strong>프롬프트 탭</strong>에 저장되고, 그 다음 날부터 새로운 14일이 시작됩니다.
+              <br />결과는 <strong>프롬프트 탭</strong>에 저장되고, 그 다음 날부터 새로운 {TOTAL_DAYS}일이 시작됩니다.
             </p>
             <button className="btn btn-primary btn-block mt-5" onClick={runAnalysis}>
               분석 시작하기
@@ -186,7 +186,7 @@ function JustDoneView({ result }: { result: WritingAnalysis }) {
       </h2>
       <p className="muted mt-2" style={{ fontSize: 14, lineHeight: 1.7 }}>
         결과는 <strong style={{ color: 'var(--ink)' }}>프롬프트</strong> 탭에 저장됐어요.
-        <br />내일부터 새로운 14일이 1일차부터 시작됩니다.
+        <br />내일부터 새로운 {TOTAL_DAYS}일이 1일차부터 시작됩니다.
       </p>
       <Link to="/prompts" className="btn btn-primary btn-block mt-5">
         <Icon name="arrow" size={16} />

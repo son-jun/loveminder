@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { AnalysisDebug } from '../types';
+import { TOTAL_DAYS, type AnalysisDebug } from '../types';
 
 interface Props {
   debug: AnalysisDebug;
@@ -12,7 +12,7 @@ export default function DebugDisclosure({ debug }: Props) {
     <section className="card card-pad" style={{ background: '#FBF7EE' }}>
       <p className="mute2" style={{ margin: 0, fontSize: 12 }}>AI 분석 과정</p>
       <p className="muted mt-2" style={{ margin: 0, fontSize: 13, lineHeight: 1.7 }}>
-        분석은 <strong style={{ color: 'var(--ink)' }}>{debug.model}</strong>로 진행되었고, 14일치 일기 중
+        분석은 <strong style={{ color: 'var(--ink)' }}>{debug.model}</strong>로 진행되었고, {TOTAL_DAYS}일치 일기 중
         가장 최근 <strong style={{ color: 'var(--ink)' }}>{debug.entryCount}편</strong>이 함께 보내졌어요.
       </p>
 
@@ -47,7 +47,7 @@ export default function DebugDisclosure({ debug }: Props) {
         <div className="mt-4">
           <p className="mute2" style={{ margin: 0, fontSize: 12 }}>1) 시스템 프롬프트 (AI의 역할 지시)</p>
           <DebugBlock>{debug.systemPrompt}</DebugBlock>
-          <p className="mute2 mt-4" style={{ margin: 0, fontSize: 12 }}>2) 사용자 메시지 (14일치 글 + 과정 메트릭)</p>
+          <p className="mute2 mt-4" style={{ margin: 0, fontSize: 12 }}>2) 사용자 메시지 ({TOTAL_DAYS}일치 글 + 과정 메트릭)</p>
           <DebugBlock>{debug.userMessage}</DebugBlock>
         </div>
       )}

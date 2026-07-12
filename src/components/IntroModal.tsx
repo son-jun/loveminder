@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import Icon from './Icon';
+import { TOTAL_DAYS } from '../types';
 
 interface Props {
   onConfirm: () => void;
@@ -26,7 +27,7 @@ export default function IntroModal({ onConfirm }: Props) {
             분석에 활용될 수 있습니다.
           </p>
           <p className="mt-3" style={{ margin: 0, color: 'var(--terracotta)' }}>
-            이 결과는 심리 진단이나 성격 평가가 아니며, <strong>이번 14일의 글쓰기에서 나타난 경향</strong>을
+            이 결과는 심리 진단이나 성격 평가가 아니며, <strong>이번 {TOTAL_DAYS}일의 글쓰기에서 나타난 경향</strong>을
             설명하기 위한 것입니다.
           </p>
         </div>
