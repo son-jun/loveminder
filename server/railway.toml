@@ -1,0 +1,12 @@
+# Railway 배포 설정 (서비스 Root Directory 를 이 server/ 폴더로 지정해서 사용)
+# 빌드는 server/Dockerfile 로, 헬스체크는 /health 로.
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# 첫 부팅 때 KoBERT 모델(368MB)을 MODEL_URL 에서 받고 torch 로 로드하므로 넉넉히.
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
