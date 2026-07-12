@@ -9,7 +9,7 @@ import { TOTAL_DAYS, type WritingAnalysis } from '../types';
 const ANALYZING_STEPS = [
   '14일치 일기를 모으는 중…',
   '글쓰기 과정 데이터를 정리하는 중…',
-  'AI에게 분석을 요청하는 중…',
+  'KoBERT로 글 유형을 판독하는 중…',
   '여섯 가지 관찰을 정리하는 중…',
   '문체에 맞춘 프롬프트를 다듬는 중…',
 ];

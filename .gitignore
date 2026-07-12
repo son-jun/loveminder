@@ -30,3 +30,11 @@ supabase/.temp/
 *.njsproj
 *.sln
 *.sw?
+
+# 이음 KoBERT 분석 서버 (server/)
+server/.venv/
+server/__pycache__/
+server/.env
+server/*.log
+# 모델 가중치 (368MB) — git에 올리지 않음. Downloads의 원본에서 복사해 배치.
+server/모델_자동판독/kobert_multilabel.pt

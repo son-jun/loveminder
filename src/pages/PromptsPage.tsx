@@ -6,12 +6,20 @@ import { fetchAllAnalyses } from '../lib/diary';
 import type { AnalysisKey, WritingAnalysis } from '../types';
 
 const ITEM_NAMES: Record<AnalysisKey, string> = {
+  // KoBERT 3축 8유형
+  writing_type: '대표 글쓰기 유형',
+  professionalism: '전문성',
+  formality: '어체(격식)',
+  subjectivity: '주관성',
+  // 규칙 기반
+  process: '글쓰기 과정 특징',
+  // AI 정리
+  prompt_direction: 'AI 프롬프트 활용 방향',
+  // (구) 과거 레코드 호환
   emotion_specificity: '감정 표현의 구체성',
   cause: '원인 탐색',
   attribution: '귀인 방식',
   alternative: '대안 제시',
-  process: '글쓰기 과정 특징',
-  prompt_direction: 'AI 프롬프트 활용 방향',
 };
 
 function formatDateLong(iso: string): string {

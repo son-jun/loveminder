@@ -1,0 +1,9 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+requests>=2.31
+numpy>=1.24
+torch>=2.0
+transformers>=4.30
+kiwipiepy>=0.17
+sentencepiece>=0.1.99
+protobuf>=3.20

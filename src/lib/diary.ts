@@ -166,29 +166,68 @@ export async function saveAnalysis(args: {
   };
 }
 
-// Analyze via edge function
+// Analyze via local KoBERT FastAPI server, then save the result to Supabase.
+// (유형 판독은 KoBERT, 마지막 정리만 AI. 기존 Supabase edge function은 더 이상 쓰지 않음)
+const ANALYZE_API =
+  (import.meta.env.VITE_ANALYZE_API as string | undefined)?.replace(/\/$/, '') ??
+  'http://127.0.0.1:8000';
+const ANALYZE_TOKEN = import.meta.env.VITE_ANALYZE_TOKEN as string | undefined;
+
+interface AnalyzeApiResponse {
+  items?: WritingAnalysis['items'];
+  recommendedPrompt?: string;
+  reasoning?: string;
+  error?: string;
+  _debug?: WritingAnalysis['_debug'];
+}
+
 export async function requestAnalysis(userId: string): Promise<WritingAnalysis> {
-  const { data, error } = await supabase.functions.invoke('analyze', {
-    body: { userId },
-  });
-  if (error) {
-    // Try to extract server-side error body for richer messaging
-    let detail = '';
-    try {
-      const ctx = (error as { context?: Response }).context;
-      if (ctx && typeof ctx.text === 'function') {
-        const bodyText = await ctx.text();
-        try {
-          const parsed = JSON.parse(bodyText);
-          detail = parsed.error || parsed.message || bodyText;
-        } catch {
-          detail = bodyText.slice(0, 400);
-        }
-      }
-    } catch {
-      /* ignore */
-    }
-    throw new Error(detail ? `${error.message} — ${detail}` : error.message);
+  // 1) 최근 14편을 클라이언트에서 모아 서버로 전달 (서버는 DB 접근 없음)
+  const all = await fetchEntries(userId); // date desc
+  const recent = [...all].reverse().slice(-14); // date asc, 최근 14
+  if (recent.length < 14) {
+    throw new Error('14일치 글이 아직 모이지 않았어요.');
   }
-  return data as WritingAnalysis;
+
+  // 2) 로컬 KoBERT 서버 호출
+  let res: Response;
+  try {
+    res = await fetch(`${ANALYZE_API}/analyze`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        ...(ANALYZE_TOKEN ? { 'x-analyze-token': ANALYZE_TOKEN } : {}),
+      },
+      body: JSON.stringify({
+        entries: recent.map((e) => ({
+          date: e.date,
+          type: e.type,
+          content: e.content,
+          process: e.process,
+        })),
+      }),
+    });
+  } catch {
+    throw new Error(
+      `분석 서버에 연결할 수 없어요. KoBERT 서버(${ANALYZE_API})가 실행 중인지 확인해 주세요.`,
+    );
+  }
+
+  const data = (await res.json().catch(() => ({}))) as AnalyzeApiResponse;
+  if (!res.ok || data.error) {
+    throw new Error(data.error || `분석 서버 오류 (${res.status})`);
+  }
+  if (!data.items || !data.recommendedPrompt) {
+    throw new Error('분석 서버 응답이 올바르지 않습니다.');
+  }
+
+  // 3) 결과를 Supabase에 저장 (RLS: 본인 insert 허용 — migration 0004)
+  const saved = await saveAnalysis({
+    userId,
+    items: data.items,
+    recommendedPrompt: data.recommendedPrompt,
+    reasoning: data.reasoning ?? '',
+  });
+
+  return { ...saved, _debug: data._debug };
 }

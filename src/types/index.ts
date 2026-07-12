@@ -32,13 +32,23 @@ export interface DiaryEntry {
 }
 
 // 6-3 6개 항목
+// 내용 판단(emotion/cause/attribution/alternative)은 KoBERT 3축 판독으로 대체됨.
+// 구 키는 과거 분석 레코드 호환을 위해 남겨둔다.
 export type AnalysisKey =
+  // KoBERT 3축 8유형 판독
+  | 'writing_type'
+  | 'professionalism'
+  | 'formality'
+  | 'subjectivity'
+  // 규칙 기반 (타이핑 과정) — 유지
+  | 'process'
+  // AI 정리
+  | 'prompt_direction'
+  // (구) AI 내용 판단 — 과거 레코드 호환
   | 'emotion_specificity'
   | 'cause'
   | 'attribution'
-  | 'alternative'
-  | 'process'
-  | 'prompt_direction';
+  | 'alternative';
 
 export interface AnalysisItem {
   key: AnalysisKey;

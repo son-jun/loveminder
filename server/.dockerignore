@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.log
+.env
+*.part
+t.json
+a.json
+out.json
+# 모델 가중치(kobert_multilabel.pt)는 일부러 제외하지 않음:
+#  - 빌드 컨텍스트에 있으면 이미지에 포함(HF Spaces LFS 등)
+#  - 없으면 런타임에 MODEL_URL 로 다운로드

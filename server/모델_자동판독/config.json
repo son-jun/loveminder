@@ -1,0 +1,16 @@
+{
+  "model_name": "skt/kobert-base-v1",
+  "max_len": 256,
+  "axes": [
+    "전문성_HL",
+    "어체_HL",
+    "어휘_HL",
+    "주관성_HL"
+  ],
+  "axis_short": [
+    "전문성",
+    "어체",
+    "어휘",
+    "주관성"
+  ]
+}
