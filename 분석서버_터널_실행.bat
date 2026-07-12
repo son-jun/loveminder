@@ -30,11 +30,14 @@ if not exist ".venv" (
   call .venv\Scripts\activate.bat
 )
 
-rem ── 2) cloudflared 존재 확인 ──────────────────────────────
+rem ── 2) cloudflared 확인 (설치 폴더를 PATH 앞에 추가 → 재부팅 없이도 인식) ──
+if exist "%ProgramFiles(x86)%\cloudflared\cloudflared.exe" set "PATH=%ProgramFiles(x86)%\cloudflared;%PATH%"
+if exist "%ProgramFiles%\cloudflared\cloudflared.exe" set "PATH=%ProgramFiles%\cloudflared;%PATH%"
 where cloudflared >nul 2>&1
 if errorlevel 1 (
-  echo [오류] cloudflared 가 설치되어 있지 않습니다.
+  echo [오류] cloudflared 를 찾을 수 없습니다.
   echo   설치:  winget install --id Cloudflare.cloudflared
+  echo   (설치했는데도 이 오류면 PC를 재부팅한 뒤 다시 실행하세요.)
   echo.
   pause
   exit /b 1
