@@ -39,4 +39,11 @@ server/*.log
 # 모델 가중치 (368MB) — git에 올리지 않음. Downloads의 원본에서 복사해 배치.
 server/모델_자동판독/kobert_multilabel.pt
 
+# 실수로 loveminder 루트에 꺼내진 모델 번들 파일 (서버는 server/ 안의 것을 사용)
+/kobert_multilabel.pt
+/SentiWord_info.json
+/config.json
+/hybrid_params.json
+/predict_hybrid.py
+
 cloudflared.exe
