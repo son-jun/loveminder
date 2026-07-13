@@ -62,7 +62,7 @@ rem 4) Cloudflare Quick Tunnel in a new window
 echo [Ieum] Copy the https://xxxx.trycloudflare.com URL shown in the new window.
 echo        Put it into Vercel VITE_ANALYZE_API and Redeploy.
 echo.
-start "Ieum Cloudflare Tunnel" cmd /k "cloudflared tunnel --url http://localhost:8000"
+start "Ieum Cloudflare Tunnel" cmd /k "cloudflared tunnel --protocol http2 --edge-ip-version 4 --url http://localhost:8000"
 
 echo.
 echo Keep BOTH windows (server / tunnel) open during the session. Disable PC sleep.
