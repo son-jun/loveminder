@@ -86,3 +86,14 @@ export interface AppUser {
 // 짧은 시연/세션에서는 빌드 시 VITE_TOTAL_DAYS 로 낮출 수 있다 (예: VITE_TOTAL_DAYS=3).
 // 주의: 서버(app.py)의 MIN_ENTRIES 와 반드시 같은 값이어야 분석이 성공한다.
 export const TOTAL_DAYS = Number(import.meta.env.VITE_TOTAL_DAYS) || 14;
+const TEST_ACCOUNT_EMAIL = (
+  (import.meta.env.VITE_TEST_ACCOUNT_EMAIL as string | undefined) || 'wpfkemno08@daum.net'
+).trim().toLowerCase();
+
+export function isTestAccount(email?: string | null): boolean {
+  return Boolean(TEST_ACCOUNT_EMAIL && email?.trim().toLowerCase() === TEST_ACCOUNT_EMAIL);
+}
+
+export function analysisDaysForEmail(email?: string | null): number {
+  return isTestAccount(email) ? 1 : TOTAL_DAYS;
+}

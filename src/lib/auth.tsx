@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase, supabaseConfigured } from './supabase';
+import { resetTestAccountData } from './diary';
+import { isTestAccount } from '../types';
 
 interface AuthCtx {
   user: User | null;
@@ -41,6 +43,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message ?? null };
   };
   const signOut = async () => {
+    const currentUser = session?.user;
+    if (currentUser && isTestAccount(currentUser.email)) {
+      await resetTestAccountData(currentUser.id);
+    }
     await supabase.auth.signOut();
   };
 

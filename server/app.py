@@ -77,6 +77,8 @@ PORT = int(os.environ.get("PORT", "8000"))
 # 분석에 필요한 최소 글 편수. 기본 14. 짧은 세션/시연에서는 MIN_ENTRIES=3 처럼 낮춘다.
 # 주의: 프론트의 VITE_TOTAL_DAYS 와 반드시 같은 값이어야 한다.
 MIN_ENTRIES = int(os.environ.get("MIN_ENTRIES", "14"))
+MAX_ENTRIES = int(os.environ.get("MAX_ENTRIES", str(MIN_ENTRIES)))
+TEST_ACCOUNT_EMAIL = os.environ.get("TEST_ACCOUNT_EMAIL", "").strip().lower()
 
 # CORS 허용 오리진: ALLOW_ORIGINS(콤마구분) 있으면 그것만, 없으면 전체 허용
 _origins_env = os.environ.get("ALLOW_ORIGINS", "").strip()
@@ -123,6 +125,7 @@ class Entry(BaseModel):
 
 class AnalyzeReq(BaseModel):
     entries: list[Entry]
+    accountEmail: str = ""
 
 
 # ── 글쓰기 과정(타이핑) 규칙 라벨 : 기존 edge function 로직 이식 ─────────────
@@ -402,6 +405,8 @@ def health():
         "gemini": bool(GEMINI_KEY),
         "model": GEMINI_MODEL,
         "minEntries": MIN_ENTRIES,
+        "maxEntries": MAX_ENTRIES,
+        "testAccountConfigured": bool(TEST_ACCOUNT_EMAIL),
     }
 
 
@@ -416,9 +421,10 @@ def predict(req: PredictReq, x_analyze_token: str | None = Header(default=None))
 def analyze(req: AnalyzeReq, x_analyze_token: str | None = Header(default=None)):
     _check_token(x_analyze_token)
     entries = [e for e in req.entries if (e.content or "").strip()]
-    if len(entries) < MIN_ENTRIES:
-        return {"error": f"{MIN_ENTRIES}일치 글이 아직 모이지 않았어요.", "count": len(entries)}
-    recent = entries[-MIN_ENTRIES:]
+    required = 1 if TEST_ACCOUNT_EMAIL and req.accountEmail.strip().lower() == TEST_ACCOUNT_EMAIL else MIN_ENTRIES
+    if len(entries) < required:
+        return {"error": f"{required}일치 글이 아직 모이지 않았어요.", "count": len(entries)}
+    recent = entries[-MAX_ENTRIES:]
 
     # 1) KoBERT 개별 판독 + 집계
     per_entry = [predict_one(e.content) for e in recent]

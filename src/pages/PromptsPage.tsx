@@ -3,7 +3,7 @@ import Icon from '../components/Icon';
 import PromptView from '../components/PromptView';
 import { useAuth } from '../lib/auth';
 import { fetchAllAnalyses } from '../lib/diary';
-import { TOTAL_DAYS, type AnalysisKey, type WritingAnalysis } from '../types';
+import { analysisDaysForEmail, type AnalysisKey, type WritingAnalysis } from '../types';
 
 const ITEM_NAMES: Record<AnalysisKey, string> = {
   // KoBERT 3축 8유형
@@ -41,6 +41,7 @@ function formatRelative(iso: string): string {
 
 export default function PromptsPage() {
   const { user } = useAuth();
+  const requiredDays = analysisDaysForEmail(user?.email);
   const [list, setList] = useState<WritingAnalysis[] | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -69,7 +70,7 @@ export default function PromptsPage() {
         <p className="sub">
           {list && list.length > 0
             ? `지금까지 ${list.length}편의 프롬프트가 모였어요`
-            : `${TOTAL_DAYS}일 사이클마다 한 편씩 쌓여요`}
+            : `${requiredDays}일 사이클마다 한 편씩 쌓여요`}
         </p>
       </div>
 
@@ -79,7 +80,7 @@ export default function PromptsPage() {
             <span className="dots"><span /><span /><span /></span>
           </div>
         ) : list.length === 0 ? (
-          <EmptyState />
+          <EmptyState requiredDays={requiredDays} />
         ) : (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 'var(--sp-5)' }}>
             {list.map((a, idx) => {
@@ -158,7 +159,7 @@ export default function PromptsPage() {
   );
 }
 
-function EmptyState() {
+function EmptyState({ requiredDays }: { requiredDays: number }) {
   return (
     <div className="card card-pad" style={{ textAlign: 'center' }}>
       <div
@@ -179,7 +180,7 @@ function EmptyState() {
         아직 만든 프롬프트가 없어요
       </h2>
       <p className="muted mt-2" style={{ fontSize: 13 }}>
-        오늘 탭에서 {TOTAL_DAYS}일치 일기를 모으고
+        오늘 탭에서 {requiredDays}일치 일기를 모으고
         <br />분석 탭에서 분석을 시작해보세요.
       </p>
     </div>

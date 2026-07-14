@@ -53,6 +53,7 @@ export function computeCycleState(
   startDate: string,
   entryDates: string[],
   today: string = format(new Date(), 'yyyy-MM-dd'),
+  requiredDays: number = TOTAL_DAYS,
 ): CycleState {
   const start = parseISO(startDate + 'T00:00:00');
   const t = parseISO(today + 'T00:00:00');
@@ -61,7 +62,7 @@ export function computeCycleState(
   return {
     startDate,
     dayNumber: Math.max(1, elapsed),
-    isComplete: daysWritten >= TOTAL_DAYS,
+    isComplete: daysWritten >= requiredDays,
     daysWritten,
   };
 }

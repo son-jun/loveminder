@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../lib/auth';
 import { fetchEntries } from '../lib/diary';
 import { formatNiceDate, weekdayLabel } from '../lib/date';
-import { TOTAL_DAYS, type DiaryEntry } from '../types';
+import { analysisDaysForEmail, type DiaryEntry } from '../types';
 
 export default function RecordsPage() {
   const { user } = useAuth();
+  const requiredDays = analysisDaysForEmail(user?.email);
   const [entries, setEntries] = useState<DiaryEntry[] | null>(null);
   const [open, setOpen] = useState<string | null>(null);
 
@@ -15,13 +16,13 @@ export default function RecordsPage() {
   }, [user]);
 
   const count = entries?.length ?? 0;
-  const pct = Math.min(100, Math.round((count / TOTAL_DAYS) * 100));
+  const pct = Math.min(100, Math.round((count / requiredDays) * 100));
 
   return (
     <div className="page">
       <div className="page-header">
         <h1>지금까지의 기록</h1>
-        <p className="sub">{TOTAL_DAYS}일 중 {Math.min(count, TOTAL_DAYS)}일 기록했어요</p>
+        <p className="sub">{requiredDays}일 중 {Math.min(count, requiredDays)}일 기록했어요</p>
 
         <div
           className="mt-4"

@@ -4,10 +4,10 @@ import Icon from '../components/Icon';
 import { useAuth } from '../lib/auth';
 import { fetchEntries, requestAnalysis } from '../lib/diary';
 import { advanceCycle, computeCycleState, getCycleStart } from '../lib/cycle';
-import { TOTAL_DAYS, type WritingAnalysis } from '../types';
+import { analysisDaysForEmail, type WritingAnalysis } from '../types';
 
-const ANALYZING_STEPS = [
-  `${TOTAL_DAYS}일치 일기를 모으는 중…`,
+const getAnalyzingSteps = (requiredDays: number) => [
+  `${requiredDays}일치 일기를 모으는 중…`,
   '글쓰기 과정 데이터를 정리하는 중…',
   'KoBERT로 글 유형을 판독하는 중…',
   '여섯 가지 관찰을 정리하는 중…',
@@ -24,6 +24,7 @@ type Status =
 
 export default function AnalysisPage() {
   const { user } = useAuth();
+  const requiredDays = analysisDaysForEmail(user?.email);
   const [status, setStatus] = useState<Status>({ kind: 'loading' });
 
   useEffect(() => {
@@ -37,6 +38,8 @@ export default function AnalysisPage() {
         const state = computeCycleState(
           cycleStart,
           entries.map((e) => e.date),
+          undefined,
+          requiredDays,
         );
         if (state.isComplete) {
           setStatus({ kind: 'ready', daysWritten: state.daysWritten });
@@ -47,13 +50,13 @@ export default function AnalysisPage() {
         setStatus({ kind: 'error', message: (e as Error).message });
       }
     })();
-  }, [user]);
+  }, [user, requiredDays]);
 
   const runAnalysis = async () => {
     if (!user) return;
     setStatus({ kind: 'analyzing' });
     try {
-      const r = await requestAnalysis(user.id);
+      const r = await requestAnalysis(user.id, user.email ?? '', requiredDays);
       // 분석 완료 → 사이클은 내일부터 새로 1일차
       await advanceCycle(user.id).catch(() => {});
       setStatus({ kind: 'justDone', result: r });
@@ -66,7 +69,7 @@ export default function AnalysisPage() {
     <div className="page">
       <div className="page-header">
         <h1>나의 글쓰기 분석</h1>
-        <p className="sub">{TOTAL_DAYS}일치가 모이면 이 화면에서 분석을 시작할 수 있어요.</p>
+        <p className="sub">{requiredDays}일치가 모이면 이 화면에서 분석을 시작할 수 있어요.</p>
       </div>
 
       <div className="page-body">
@@ -88,7 +91,7 @@ export default function AnalysisPage() {
           </div>
         )}
 
-        {status.kind === 'locked' && <LockedView daysWritten={status.daysWritten} />}
+        {status.kind === 'locked' && <LockedView daysWritten={status.daysWritten} requiredDays={requiredDays} />}
 
         {status.kind === 'ready' && (
           <div className="card card-pad" style={{ textAlign: 'center' }}>
@@ -107,11 +110,11 @@ export default function AnalysisPage() {
               <Icon name="sparkle" size={26} />
             </div>
             <h2 className="serif mt-3" style={{ margin: 0, fontSize: 'var(--fs-20)' }}>
-              {TOTAL_DAYS}일치 글이 모였어요
+              {requiredDays}일치 글이 모였어요
             </h2>
             <p className="muted mt-2" style={{ fontSize: 14 }}>
               지금 분석을 시작하면 자기성찰 리포트와 나만의 AI 프롬프트가 만들어져요.
-              <br />결과는 <strong>프롬프트 탭</strong>에 저장되고, 그 다음 날부터 새로운 {TOTAL_DAYS}일이 시작됩니다.
+              <br />결과는 <strong>프롬프트 탭</strong>에 저장되고, 그 다음 날부터 새로운 {requiredDays}일이 시작됩니다.
             </p>
             <button className="btn btn-primary btn-block mt-5" onClick={runAnalysis}>
               분석 시작하기
@@ -119,30 +122,31 @@ export default function AnalysisPage() {
           </div>
         )}
 
-        {status.kind === 'analyzing' && <AnalyzingView />}
+        {status.kind === 'analyzing' && <AnalyzingView requiredDays={requiredDays} />}
 
-        {status.kind === 'justDone' && <JustDoneView result={status.result} />}
+        {status.kind === 'justDone' && <JustDoneView result={status.result} requiredDays={requiredDays} />}
       </div>
     </div>
   );
 }
 
-function AnalyzingView() {
+function AnalyzingView({ requiredDays }: { requiredDays: number }) {
+  const steps = getAnalyzingSteps(requiredDays);
   const [step, setStep] = useState(0);
   useEffect(() => {
     const id = setInterval(() => {
-      setStep((s) => Math.min(s + 1, ANALYZING_STEPS.length - 1));
+      setStep((s) => Math.min(s + 1, steps.length - 1));
     }, 1800);
     return () => clearInterval(id);
-  }, []);
+  }, [steps.length]);
   return (
     <div className="card card-pad" style={{ textAlign: 'center' }}>
       <span className="dots"><span /><span /><span /></span>
       <p className="serif mt-4" style={{ margin: 0, fontSize: 16, color: 'var(--ink)' }}>
-        {ANALYZING_STEPS[step]}
+        {steps[step]}
       </p>
       <ul style={{ listStyle: 'none', padding: 0, margin: 'var(--sp-4) 0 0', display: 'grid', gap: 6 }}>
-        {ANALYZING_STEPS.map((label, i) => (
+        {steps.map((label, i) => (
           <li
             key={i}
             className="row gap-2"
@@ -164,7 +168,7 @@ function AnalyzingView() {
   );
 }
 
-function JustDoneView({ result }: { result: WritingAnalysis }) {
+function JustDoneView({ result, requiredDays }: { result: WritingAnalysis; requiredDays: number }) {
   return (
     <div className="card card-pad leafy" style={{ textAlign: 'center' }}>
       <div
@@ -186,7 +190,7 @@ function JustDoneView({ result }: { result: WritingAnalysis }) {
       </h2>
       <p className="muted mt-2" style={{ fontSize: 14, lineHeight: 1.7 }}>
         결과는 <strong style={{ color: 'var(--ink)' }}>프롬프트</strong> 탭에 저장됐어요.
-        <br />내일부터 새로운 {TOTAL_DAYS}일이 1일차부터 시작됩니다.
+        <br />내일부터 새로운 {requiredDays}일이 1일차부터 시작됩니다.
       </p>
       <Link to="/prompts" className="btn btn-primary btn-block mt-5">
         <Icon name="arrow" size={16} />
@@ -199,8 +203,8 @@ function JustDoneView({ result }: { result: WritingAnalysis }) {
   );
 }
 
-function LockedView({ daysWritten }: { daysWritten: number }) {
-  const left = Math.max(0, TOTAL_DAYS - daysWritten);
+function LockedView({ daysWritten, requiredDays }: { daysWritten: number; requiredDays: number }) {
+  const left = Math.max(0, requiredDays - daysWritten);
   return (
     <div className="card card-pad leafy" style={{ textAlign: 'center' }}>
       <div
@@ -227,11 +231,11 @@ function LockedView({ daysWritten }: { daysWritten: number }) {
         className="mt-5"
         style={{
           display: 'grid',
-          gridTemplateColumns: `repeat(${TOTAL_DAYS}, 1fr)`,
+          gridTemplateColumns: `repeat(${requiredDays}, 1fr)`,
           gap: 6,
         }}
       >
-        {Array.from({ length: TOTAL_DAYS }).map((_, i) => (
+        {Array.from({ length: requiredDays }).map((_, i) => (
           <div
             key={i}
             style={{

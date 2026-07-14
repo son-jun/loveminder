@@ -200,3 +200,15 @@ create policy "analysis self write" on public.writing_analyses
   for insert with check (auth.uid() = user_id);
 
 
+-- ====================================================================
+-- supabase/migrations/0005_test_account_reset.sql
+-- ====================================================================
+drop policy if exists "analysis self delete" on public.writing_analyses;
+create policy "analysis self delete" on public.writing_analyses
+  for delete using (auth.uid() = user_id);
+
+drop policy if exists "profile self delete" on public.user_profiles;
+create policy "profile self delete" on public.user_profiles
+  for delete using (auth.uid() = user_id);
+
+

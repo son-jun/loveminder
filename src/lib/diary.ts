@@ -182,12 +182,16 @@ interface AnalyzeApiResponse {
   _debug?: WritingAnalysis['_debug'];
 }
 
-export async function requestAnalysis(userId: string): Promise<WritingAnalysis> {
+export async function requestAnalysis(
+  userId: string,
+  accountEmail: string,
+  requiredDays: number = TOTAL_DAYS,
+): Promise<WritingAnalysis> {
   // 1) 최근 N편을 클라이언트에서 모아 서버로 전달 (서버는 DB 접근 없음)
   const all = await fetchEntries(userId); // date desc
-  const recent = [...all].reverse().slice(-TOTAL_DAYS); // date asc, 최근 N편
-  if (recent.length < TOTAL_DAYS) {
-    throw new Error(`${TOTAL_DAYS}일치 글이 아직 모이지 않았어요.`);
+  const recent = [...all].reverse().slice(-requiredDays); // date asc, 최근 N편
+  if (recent.length < requiredDays) {
+    throw new Error(`${requiredDays}일치 글이 아직 모이지 않았어요.`);
   }
 
   // 2) 로컬 KoBERT 서버 호출
@@ -200,6 +204,7 @@ export async function requestAnalysis(userId: string): Promise<WritingAnalysis> 
         ...(ANALYZE_TOKEN ? { 'x-analyze-token': ANALYZE_TOKEN } : {}),
       },
       body: JSON.stringify({
+        accountEmail,
         entries: recent.map((e) => ({
           date: e.date,
           type: e.type,
@@ -231,4 +236,13 @@ export async function requestAnalysis(userId: string): Promise<WritingAnalysis> 
   });
 
   return { ...saved, _debug: data._debug };
+}
+
+// 테스트 계정은 로그아웃할 때 다음 시연을 위해 작성·분석·사이클 상태를 모두 비운다.
+export async function resetTestAccountData(userId: string): Promise<void> {
+  const tables = ['writing_analyses', 'diary_entries', 'user_profiles'] as const;
+  for (const table of tables) {
+    const { error } = await supabase.from(table).delete().eq('user_id', userId);
+    if (error) throw error;
+  }
 }

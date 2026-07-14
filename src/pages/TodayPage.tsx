@@ -12,7 +12,7 @@ import {
 import { todayKey, formatNiceDate, weekdayLabel } from '../lib/date';
 import { computeCycleState, getCycleStart } from '../lib/cycle';
 import { useWritingTracker, type BlockedReason } from '../hooks/useWritingTracker';
-import { TOTAL_DAYS, type DiaryEntry } from '../types';
+import { analysisDaysForEmail, type DiaryEntry } from '../types';
 
 const BLOCK_MESSAGES: Record<BlockedReason, string> = {
   paste: '붙여넣기는 사용할 수 없어요. 직접 적어 내려간 글로 분석해야 정확한 결과가 나옵니다.',
@@ -21,6 +21,7 @@ const BLOCK_MESSAGES: Record<BlockedReason, string> = {
 
 export default function TodayPage() {
   const { user, signOut } = useAuth();
+  const requiredDays = analysisDaysForEmail(user?.email);
   const [intro, setIntro] = useState(false);
   const [existingToday, setExistingToday] = useState<DiaryEntry | null>(null);
   const [dayNumber, setDayNumber] = useState(1);
@@ -60,14 +61,14 @@ export default function TodayPage() {
         fetchEntries(user.id).catch<DiaryEntry[]>(() => []),
       ]);
       // dayNumber는 사이클 시작일 기준의 "오늘이 며칠째인가" — 14로 cap
-      const state = computeCycleState(cycleStart, all.map((e) => e.date), today);
-      if (!cancelled) setDayNumber(Math.min(state.dayNumber, TOTAL_DAYS));
+      const state = computeCycleState(cycleStart, all.map((e) => e.date), today, requiredDays);
+      if (!cancelled) setDayNumber(Math.min(state.dayNumber, requiredDays));
     })();
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, today]);
+  }, [user, today, requiredDays]);
 
   const onIntroOk = async () => {
     setIntro(false);
@@ -105,7 +106,7 @@ export default function TodayPage() {
     <div className="page leafy">
       <div className="page-header">
         <div className="row between">
-          <span className="chip">{TOTAL_DAYS}일 중 {dayNumber}일째</span>
+          <span className="chip">{requiredDays}일 중 {dayNumber}일째</span>
           <button
             type="button"
             onClick={signOut}

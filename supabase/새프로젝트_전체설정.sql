@@ -175,3 +175,15 @@ create index if not exists writing_analyses_email_idx on public.writing_analyses
 drop policy if exists "analysis self write" on public.writing_analyses;
 create policy "analysis self write" on public.writing_analyses
   for insert with check (auth.uid() = user_id);
+
+
+-- ─────────────────────────────────────────────────────────
+-- 0005_test_account_reset : 테스트 계정 로그아웃 초기화
+-- ─────────────────────────────────────────────────────────
+drop policy if exists "analysis self delete" on public.writing_analyses;
+create policy "analysis self delete" on public.writing_analyses
+  for delete using (auth.uid() = user_id);
+
+drop policy if exists "profile self delete" on public.user_profiles;
+create policy "profile self delete" on public.user_profiles
+  for delete using (auth.uid() = user_id);

@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 title Ieum - Analysis Server + Cloudflare Tunnel
 cd /d "%~dp0server"
 
@@ -7,11 +8,25 @@ echo   Ieum KoBERT Analysis Server + Cloudflare Tunnel
 echo ================================================
 echo.
 
-rem 0) Model weight check (search by ASCII filename, no Korean path needed)
+rem 0) Model bundle check (ASCII filenames avoid Windows code-page path issues)
 dir /b /s kobert_multilabel.pt >nul 2>&1
 if errorlevel 1 (
-  echo [ERROR] model weight not found: server\...\kobert_multilabel.pt
-  echo         Put the original .pt there and run again.
+  echo [ERROR] kobert_multilabel.pt not found under server.
+  echo         Put the original model bundle in server\model folder and run again.
+  echo.
+  pause
+  exit /b 1
+)
+dir /b /s config.json >nul 2>&1
+if errorlevel 1 (
+  echo [ERROR] config.json not found under server.
+  echo.
+  pause
+  exit /b 1
+)
+dir /b /s hybrid_params.json >nul 2>&1
+if errorlevel 1 (
+  echo [ERROR] hybrid_params.json not found under server.
   echo.
   pause
   exit /b 1
@@ -20,7 +35,11 @@ if errorlevel 1 (
 rem 1) Python venv check
 if not exist ".venv\Scripts\python.exe" (
   echo [First run] Creating venv + installing deps... this takes a few minutes
-  python -m venv .venv
+  if exist "%LocalAppData%\Programs\Python\Python311\python.exe" (
+    "%LocalAppData%\Programs\Python\Python311\python.exe" -m venv .venv
+  ) else (
+    py -3.11 -m venv .venv
+  )
   .venv\Scripts\python.exe -m pip install --upgrade pip
   .venv\Scripts\python.exe -m pip install -r requirements.txt
 )
